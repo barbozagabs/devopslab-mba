@@ -1,7 +1,9 @@
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 
 @app.route("/")
 def pagina_inicial():
-    return "Gabs v2.0"
+    return "Gabs v3.0"
