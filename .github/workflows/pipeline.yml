@@ -111,8 +111,11 @@ jobs:
 
     steps:
       - name: Download do Repositório
-        uses: actions/checkout@v4 
-      
+        uses: actions/checkout@v4       # https://github.com/actions/checkout
+        with:
+          # Você está solicitando que nenhum histórico seja baixado além do commit mais recente.
+          fetch-depth: 0
+
       - name: DAST - ZAP Scan
         uses: zaproxy/action-full-scan@v0.9.0
         with:
