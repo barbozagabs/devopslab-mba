@@ -9,17 +9,8 @@ on:
       - feature/devsecops
 
 jobs:
-  CodeSecurity:
-    runs-on: ubuntu-lastest
-    steps:
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master  #https://github.com/marketplace/actions/sonarcloud-scan
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  Build:
+  CodeTeste:
     runs-on: ubuntu-latest
-    needs: CodeSecurity
     steps:
       - name: Download do Repositório
         uses: actions/checkout@v4       # https://github.com/actions/checkout
@@ -40,6 +31,25 @@ jobs:
           coverage run --source=app -m pytest test.py
           coverage report -m
           coverage xml -i
+
+  CodeSecurity:
+    runs-on: ubuntu-lastest
+    needs: CodeTeste
+    steps:
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master  #https://github.com/marketplace/actions/sonarcloud-scan
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  Build:
+    runs-on: ubuntu-latest
+    needs: CodeSecurity
+    steps:
+      - name: Download do Repositório
+        uses: actions/checkout@v4       # https://github.com/actions/checkout
+        with:
+          # Você está solicitando que nenhum histórico seja baixado além do commit mais recente.
+          fetch-depth: 0
 
       - name: Login no Artifact Registry
         uses: docker/login-action@v3      # https://github.com/marketplace/actions/docker-login#google-artifact-registry-gar
