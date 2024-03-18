@@ -47,7 +47,17 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  Build:
+    CodeQL:
+      runs-on: ubuntu-latest
+      needs: CodeTeste
+      steps:
+        - name: Download do Repositório
+          uses: actions/checkout@v4       # https://github.com/actions/checkout
+          with:
+            # Você está solicitando que nenhum histórico seja baixado além do commit mais recente.
+            fetch-depth: 0 
+
+  CodeBuild:
     runs-on: ubuntu-latest
     needs: CodeSecurity
     steps:
@@ -72,8 +82,8 @@ jobs:
         run: |
           docker push ${{ vars.GOOGLE_ARTIFACT }}/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GOOGLE_REPONAME }}/${{ vars.GOOGLE_MYAPP }}:latest
 
-  Deploy:
-    needs: Build
+  CodeDeploy:
+    needs: CodeBuild
     runs-on: ubuntu-latest
     permissions:
         contents: write
@@ -101,6 +111,18 @@ jobs:
       - name: Validando a API
         run: 'curl "${{ steps.deploy.outputs.url }}"'
 
+  CodeDast:
+    needs: CodeDeploy
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write
+        issues: write
+        pull-requests: write
+
+    steps:
+      - name: Download do Repositório
+        uses: actions/checkout@v4 
+      
       - name: DAST - ZAP Scan
         uses: zaproxy/action-full-scan@v0.9.0
         with:
@@ -109,23 +131,28 @@ jobs:
           target: '${{ steps.deploy.outputs.url }}'
           cmd_options: '-a'
 
-      - name: Notificação Slack
-        id: slack
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          payload: |
-            {
-              "text": "DevOpsLab Pipeline Gabs : ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "DevOpsLab Pipeline: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+  SlackNotification:
+      needs: CodeDast
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Notificação Slack
+          id: slack
+          uses: slackapi/slack-github-action@v1.25.0
+          with:
+            payload: |
+              {
+                "text": "DevOpsLab Pipeline Gabs : ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "DevOpsLab Pipeline Gabs: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                    }
                   }
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFICATIONS_TOKEN }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOKv
+                ]
+              }
+          env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFICATIONS_TOKEN }}
+            SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
