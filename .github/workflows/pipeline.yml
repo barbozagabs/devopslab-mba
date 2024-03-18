@@ -33,7 +33,7 @@ jobs:
           coverage xml -i
 
   CodeSecurity:
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-latest
     needs: CodeTeste
     steps:
     - name: SonarCloud Scan
