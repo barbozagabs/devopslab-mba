@@ -122,7 +122,7 @@ jobs:
             cmd_options: '-a'
 
   SlackNotification:
-      needs: CodeDeploy
+      needs: CodeDast
       runs-on: ubuntu-latest
 
       steps:
