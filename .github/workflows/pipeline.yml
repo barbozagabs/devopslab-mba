@@ -118,7 +118,7 @@ jobs:
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
             docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
-            target: '${{ CodeDeploy.deploy.outputs.url }}'
+            target: '${{ job.CodeDeploy.deploy.outputs.url }}'
             cmd_options: '-a'
 
   SlackNotification:
