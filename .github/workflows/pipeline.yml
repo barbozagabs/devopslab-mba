@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - main
-      - feature/devsecops
+      - feature/ProfFabiano
 
 jobs:
   CodeTeste:
