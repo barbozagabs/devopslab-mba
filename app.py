@@ -6,4 +6,4 @@ csrf = CSRFProtect(app)
 
 @app.route("/")
 def pagina_inicial():
-    return "Gabs v3.0 - Concluido"
+    return "Gabs v4.0 - Concluído!"
